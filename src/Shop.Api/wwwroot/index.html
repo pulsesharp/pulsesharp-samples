@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop console</title>
+<style>
+  :root { --ink: #0A0F1A; --paper: #F3F5F4; --card: #fff; --line: #dde2e0; --signal: #0B8A63; --amber: #b87400; --red: #b3261e; --muted: #5d6762; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #F3F5F4; --paper: #0A0F1A; --card: #141b29; --line: #263042; --signal: #2BE4A7; --amber: #FFB224; --red: #ff7a70; --muted: #94a09a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 "IBM Plex Sans", system-ui, sans-serif; background: var(--paper); color: var(--ink); }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font: 600 22px "Space Grotesk", system-ui, sans-serif; margin: 0 0 4px; }
+  h2 { font: 600 13px "Space Grotesk", system-ui, sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+  p.sub { margin: 0 0 20px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  td, th { text-align: left; padding: 5px 0; border-bottom: 1px solid var(--line); }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: 0; }
+  .big { font: 600 28px "Space Grotesk", system-ui, sans-serif; }
+  .ok { color: var(--signal); } .warn { color: var(--amber); } .bad { color: var(--red); }
+  button { font: inherit; cursor: pointer; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+  button:hover { border-color: var(--signal); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 13px; }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Shop console</h1>
+  <p class="sub">The cloud side of the PulseSharp coffee shop. It refreshes by itself every 2 seconds.</p>
+
+  <div class="grid">
+    <section><h2>Sales received</h2><div class="big" id="count">-</div><div class="muted" id="revenue"></div></section>
+    <section><h2>Handlers</h2><div class="big" id="state">-</div><div class="muted" id="streams"></div></section>
+    <section>
+      <h2>Receipt printer</h2>
+      <div class="big" id="printer">-</div>
+      <div class="row" style="margin-top:8px"><button id="toggle">Break the printer</button></div>
+    </section>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <section><h2>Menu and stock</h2><table id="menu"></table></section>
+    <section><h2>Latest sales (from the tills)</h2><table id="sales"></table></section>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <section>
+      <h2>Problems</h2>
+      <div id="problems" class="muted">None.</div>
+      <div class="row" style="margin-top:8px"><button id="retry">Retry failed</button></div>
+    </section>
+    <section>
+      <h2>Receipts printed</h2><div id="receipts" class="muted">None yet.</div>
+      <div class="row" style="margin-top:12px"><button id="report">Run today's report</button><a href="/reports"><code>/reports</code></a><a href="/admin/jobs"><code>/admin/jobs</code></a></div>
+    </section>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const money = n => Number(n).toFixed(2);
+let broken = false;
+
+async function refresh() {
+  try {
+    const s = await (await fetch('/status')).json();
+    broken = s.printerBroken;
+    $('count').textContent = s.salesCount;
+    $('revenue').textContent = money(s.revenue) + ' in total';
+    $('streams').textContent = s.streams + ' streams followed';
+    const bad = s.problems.length;
+    $('state').innerHTML = bad ? `<span class="${s.problems.some(p => p.state === 'Failed') ? 'bad' : 'warn'}">${bad} with problems</span>` : '<span class="ok">All fine</span>';
+    $('printer').innerHTML = broken ? '<span class="bad">Broken</span>' : '<span class="ok">Working</span>';
+    $('toggle').textContent = broken ? 'Fix the printer' : 'Break the printer';
+    $('menu').innerHTML = '<tr><th>Product</th><th class="n">Price</th><th class="n">Stock</th></tr>' + s.products.map(p =>
+      `<tr><td>${p.name}</td><td class="n">${money(p.price)}</td><td class="n ${p.stock <= 5 ? 'warn' : ''}">${p.stock}</td></tr>`).join('');
+    $('sales').innerHTML = s.recentSales.length ? '<tr><th>Till</th><th class="n">Total</th><th class="n">Time</th></tr>' + s.recentSales.map(x =>
+      `<tr><td>${x.till}</td><td class="n">${money(x.total)}</td><td class="n">${new Date(x.soldAt).toLocaleTimeString()}</td></tr>`).join('') : '<tr><td class="muted">No sales yet. Start a till and sell something.</td></tr>';
+    $('problems').innerHTML = bad ? '<table>' + s.problems.map(p =>
+      `<tr><td><code>${p.handlerName}</code><br><span class="muted">${p.stream}</span></td><td class="${p.state === 'Failed' ? 'bad' : 'warn'}">${p.state} (${p.attempts})<br><span class="muted">${p.lastError ?? ''}</span></td></tr>`).join('') + '</table>' : 'None.';
+    $('receipts').innerHTML = s.receipts.length ? s.receipts.map(r => `<div><code>${r}</code></div>`).join('') : 'None yet.';
+  } catch (e) {
+    $('state').innerHTML = '<span class="bad">Can\'t reach the API</span>';
+  }
+}
+
+const post = (url, body) => fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body ?? {}) }).then(refresh);
+$('toggle').onclick = () => post('/admin/printer', { broken: !broken });
+$('retry').onclick = () => post('/admin/retry-failed');
+$('report').onclick = () => post('/reports/run');
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

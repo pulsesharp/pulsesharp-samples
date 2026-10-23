@@ -1,0 +1,76 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Till.Desktop.App"
+             RequestedThemeVariant="Light">
+  <Application.Styles>
+    <FluentTheme />
+
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="#0B8A63" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="FontSize" Value="17" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Height" Value="50" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="16,0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#097552" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#076445" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <Style Selector="Button.secondary">
+      <Setter Property="Background" Value="White" />
+      <Setter Property="Foreground" Value="#0A0F1A" />
+      <Setter Property="BorderBrush" Value="#D5DCD9" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="Medium" />
+      <Setter Property="Height" Value="50" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="18,0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#EEF2F0" />
+      <Setter Property="BorderBrush" Value="#0B8A63" />
+      <Setter Property="Foreground" Value="#0A0F1A" />
+    </Style>
+
+    <Style Selector="Button.tile">
+      <Setter Property="Background" Value="White" />
+      <Setter Property="BorderBrush" Value="#E3E8E6" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="16" />
+      <Setter Property="Padding" Value="14" />
+      <Setter Property="Width" Value="172" />
+      <Setter Property="Height" Value="108" />
+      <Setter Property="Margin" Value="0,0,12,12" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Stretch" />
+      <Setter Property="Effect" Value="drop-shadow(0 2 8 #1F000000)" />
+    </Style>
+    <Style Selector="Button.tile:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#F6FBF9" />
+      <Setter Property="BorderBrush" Value="#2BE4A7" />
+    </Style>
+    <Style Selector="Button.tile:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#E6F6F0" />
+    </Style>
+
+    <Style Selector="TextBlock.caption">
+      <Setter Property="Foreground" Value="#5D6762" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+  </Application.Styles>
+</Application>

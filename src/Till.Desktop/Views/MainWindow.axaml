@@ -1,0 +1,125 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Till.Desktop.ViewModels"
+        x:Class="Till.Desktop.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="{Binding Title}"
+        Icon="/Assets/logo.png"
+        Width="980" Height="660" MinWidth="820" MinHeight="560"
+        Background="#F3F5F4">
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+    <Border Grid.Row="0" Background="#0A0F1A" Padding="22,14">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <Image Grid.Column="0" Source="/Assets/logo.png" Width="38" Height="38" Margin="0,0,14,0" />
+        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+          <TextBlock Text="{Binding ShopName}" Foreground="#F3F5F4" FontSize="19" FontWeight="SemiBold" />
+          <TextBlock Text="Point of sale  -  powered by PulseSharp" Foreground="#8FA19A" FontSize="12" />
+        </StackPanel>
+        <Border Grid.Column="2" Background="#2BE4A7" CornerRadius="14" Padding="14,5" VerticalAlignment="Center">
+          <TextBlock Text="{Binding TillName}" Foreground="#0A0F1A" FontWeight="SemiBold" />
+        </Border>
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="1" Background="#FFF1D6" Padding="22,10" IsVisible="{Binding Warning, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+      <TextBlock Text="{Binding Warning}" Foreground="#6B4400" FontWeight="Medium" TextWrapping="Wrap" />
+    </Border>
+
+    <Grid Grid.Row="2" ColumnDefinitions="*,340" Margin="22,20,22,16">
+
+      <ScrollViewer Grid.Column="0" Margin="0,0,20,0" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="10">
+          <TextBlock Text="MENU" Classes="caption" />
+          <ItemsControl ItemsSource="{Binding Menu}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ProductViewModel">
+                <Button Classes="tile" Command="{Binding Add}" AutomationProperties.Name="{Binding Name}">
+                  <Grid RowDefinitions="Auto,*,Auto">
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+                      <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18" Background="{Binding Accent}">
+                        <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="Bold" FontSize="16"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Border>
+                      <TextBlock Grid.Column="1" Text="{Binding Price}" FontSize="18" FontWeight="SemiBold" Foreground="#0A0F1A"
+                                 HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    </Grid>
+                    <TextBlock Grid.Row="2" Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" Foreground="#0A0F1A" />
+                    <TextBlock Grid.Row="1" Text="{Binding Note}" FontSize="12" FontWeight="SemiBold" Foreground="#B87400"
+                               VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                  </Grid>
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <TextBlock Text="RECENT SALES ON THIS TILL" Classes="caption" Margin="0,14,0,0" />
+          <Border Background="White" CornerRadius="14" BorderBrush="#E3E8E6" BorderThickness="1" Padding="16,8">
+            <ItemsControl ItemsSource="{Binding RecentSales}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:RecentSaleViewModel">
+                  <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,6">
+                    <TextBlock Grid.Column="0" Text="{Binding Summary}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="1" Text="{Binding Total}" FontWeight="SemiBold" Margin="16,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding Time}" Foreground="#5D6762" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+
+      <Border Grid.Column="1" Background="White" CornerRadius="18" Padding="20" BorderBrush="#E3E8E6" BorderThickness="1"
+              BoxShadow="0 4 18 0 #14000000">
+        <Grid RowDefinitions="Auto,*,Auto,Auto">
+          <TextBlock Grid.Row="0" Text="CURRENT SALE" Classes="caption" Margin="0,0,0,10" />
+
+          <Grid Grid.Row="1">
+            <TextBlock Text="Tap an item to start a sale" Foreground="#8A9591" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       IsVisible="{Binding CartIsEmpty}" />
+            <ItemsControl ItemsSource="{Binding Cart}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CartLineViewModel">
+                  <Grid ColumnDefinitions="*,Auto,72" Margin="0,5">
+                    <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="Medium" />
+                    <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat='{}{0} x'}" Foreground="#5D6762" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding LineTotal}" HorizontalAlignment="Right" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Grid>
+
+          <Border Grid.Row="2" BorderBrush="#E3E8E6" BorderThickness="0,1,0,0" Margin="0,12,0,14" Padding="0,14,0,0">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="Total" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="{Binding Total}" FontSize="30" FontWeight="Bold" Foreground="#0A0F1A" />
+            </Grid>
+          </Border>
+
+          <Grid Grid.Row="3" ColumnDefinitions="*,2*" ColumnSpacing="10">
+            <Button Grid.Column="0" Classes="secondary" Content="Clear" Command="{Binding Clear}" />
+            <Button Grid.Column="1" Classes="primary" Content="{Binding PayText}" Command="{Binding Pay}" />
+          </Grid>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <Border Grid.Row="3" Background="White" BorderBrush="#E3E8E6" BorderThickness="0,1,0,0" Padding="22,12">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <Border Grid.Column="0" Background="{Binding StatusBrush}" CornerRadius="14" Padding="12,4" VerticalAlignment="Center">
+          <TextBlock Text="{Binding StatusText}" Foreground="White" FontSize="13" FontWeight="SemiBold" />
+        </Border>
+        <TextBlock Grid.Column="1" Text="{Binding StatusDetail}" Foreground="#5D6762" Margin="14,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <Button Grid.Column="2" Classes="secondary" Content="Sync now" Command="{Binding SyncNow}" Height="38" HorizontalAlignment="Right" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

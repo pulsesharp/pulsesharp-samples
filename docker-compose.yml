@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: pulsesharp-samples-postgres
+    environment:
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: shop
+      POSTGRES_DB: shop
+    ports:
+      - "55433:5432"
+    volumes:
+      - shop-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shop -d shop"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  shop-data:
