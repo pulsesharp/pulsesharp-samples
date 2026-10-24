@@ -49,7 +49,7 @@ public sealed class TillScreenTests : IDisposable
     }
 
     [Fact]
-    public async Task ASaleAppearsInRecentSalesAndCountsAsWaitingUntilTheNextSync()
+    public async Task ASaleAppearsInRecentSales()
     {
         await using var pulse = await PulseTestHost.Start(builder => TillHost.AddScreenHandlers(builder, _database));
         var sale = Sales.Sale("till-1", "coffee", "Coffee", 2, 3.20m);
@@ -60,7 +60,5 @@ public sealed class TillScreenTests : IDisposable
         var recent = Assert.Single(_database.LoadRecentSales(5));
         Assert.Equal("2 x Coffee", recent.Summary);
         Assert.Equal(6.40m, recent.Total);
-        Assert.Equal(1, _database.CountSalesSince(null));
-        Assert.Equal(0, _database.CountSalesSince(DateTimeOffset.UtcNow.AddMinutes(1)));
     }
 }

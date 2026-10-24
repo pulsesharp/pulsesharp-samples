@@ -1,5 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using PulseSharp;
+using PulseSharp.Sync;
 using Shop.Api.Receipts;
 using Shop.Contracts;
 
@@ -84,6 +87,44 @@ public class ShopApiTests(ShopCloud cloud) : IClassFixture<ShopCloud>
         var receipts = printer.Printed.Where(receipt => receipt.StartsWith("till-a")).ToList();
         Assert.Equal("till-a: 1 x Latte = 3.80", receipts[0]);
         Assert.Equal("till-a: 2 x Latte = 7.60", receipts[1]);
+    }
+
+    [Fact]
+    public async Task ATillCannotWriteTheMenuButItsOwnSalesStillArrive()
+    {
+        Assert.SkipUnless(cloud.Available, NoPostgres);
+        var path = Path.Combine(Path.GetTempPath(), $"till-security-{Guid.NewGuid():N}.db");
+        var builder = Host.CreateApplicationBuilder();
+        builder.Logging.ClearProviders();
+        builder.Services.AddPulseSharpSqlite(path, pulse =>
+        {
+            pulse.Node = "till-1";
+            pulse.UseSync(sync =>
+            {
+                sync.Server = new Uri("http://localhost/pulse/sync");
+                sync.ApiKey = "demo-key-till-1";
+                sync.HttpHandler = cloud.CreateHandler();
+                sync.Interval = TimeSpan.FromHours(1);
+            });
+        });
+        using var till = builder.Build();
+        await till.StartAsync();
+        var pulse = till.Services.GetRequiredService<IPulse>();
+        var sale = Sales.Sale("till-1", "water", "Water", 1, 1.50m);
+
+        await pulse.Emit(Streams.Menu, new PriceChanged("muffin", 0.01m));
+        await pulse.Emit(Sales.StreamOf(sale), sale);
+        var status = await till.Services.GetRequiredService<IPulseSync>().SyncNow();
+
+        Assert.True(status.Online, status.LastError);
+        await ShopCloud.Eventually(async () => await cloud.Count($"SELECT count(*) FROM shop.sales WHERE sale_id = '{sale.SaleId}'") == 1, "the till's own sale arrives");
+        await ShopCloud.Eventually(async () => await cloud.Count("SELECT count(*) FROM pulsesharp.events WHERE event_name = 'PriceChanged' AND origin = 'till-1'") == 0, "no price change from a till is saved");
+        var menu = (await cloud.Client.GetFromJsonAsync<List<ProductAdded>>("/menu"))!;
+        Assert.Equal(2.70m, menu.Single(product => product.Sku == "muffin").Price);
+
+        await till.StopAsync();
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+        File.Delete(path);
     }
 
     [Fact]

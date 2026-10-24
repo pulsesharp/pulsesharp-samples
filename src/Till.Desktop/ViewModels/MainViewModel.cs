@@ -75,10 +75,8 @@ public sealed class MainViewModel : ViewModelBase
 
         TillHost.ScreenDataChanged += () => Dispatcher.UIThread.Post(Reload);
 
-        // IPulseSync has no "changed" event yet, so the status bar looks at it once a second.
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        timer.Tick += (_, _) => RefreshStatus();
-        timer.Start();
+        // The status bar changes whenever sync says so (it runs on a background thread, the screen needs its own).
+        _sync.StatusChanged += _ => Dispatcher.UIThread.Post(RefreshStatus);
 
         Reload();
         RefreshStatus();
@@ -241,13 +239,13 @@ public sealed class MainViewModel : ViewModelBase
     private void RefreshStatus()
     {
         var status = _sync.Status;
-        var waiting = _database.CountSalesSince(status.LastSyncedAt);
+        var waiting = status.Waiting;
 
         if (status.Online)
         {
             StatusBrush = Green;
             StatusText = waiting == 0 ? "Online" : "Sending";
-            StatusDetail = waiting == 0 ? $"Last synced {status.LastSyncedAt?.ToLocalTime():HH:mm:ss}" : $"{waiting} sale(s) go out at the next sync";
+            StatusDetail = waiting == 0 ? $"Last synced {status.LastSyncedAt?.ToLocalTime():HH:mm:ss}" : $"{waiting} sale(s) are going out";
         }
         else if (status.LastError is null)
         {

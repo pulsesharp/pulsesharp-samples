@@ -9,8 +9,6 @@ public static class StatusEndpoints
 {
     public static void MapStatus(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/health", () => Results.Ok());
-
         app.MapGet("/status", async (NpgsqlDataSource dataSource, IPulseControl control, ReceiptPrinter printer, CancellationToken cancellationToken) =>
         {
             var products = new List<object>();

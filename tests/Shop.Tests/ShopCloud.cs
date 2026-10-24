@@ -30,6 +30,11 @@ public sealed class ShopCloud : IAsyncLifetime
         }
     }
 
+    public HttpMessageHandler CreateHandler()
+    {
+        return _factory!.Server.CreateHandler();
+    }
+
     public IPulse Pulse
     {
         get

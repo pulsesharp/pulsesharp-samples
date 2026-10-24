@@ -128,7 +128,7 @@ public static class Load
                 DateTimeOffset.UtcNow
             );
             var stream = streamPerSale
-                ? Streams.SalePrefix + sale.SaleId.ToString("N")
+                ? $"{Streams.SalePrefix}{name}-{sale.SaleId:N}"
                 : Streams.Sales(name, DateOnly.FromDateTime(sale.SoldAt.UtcDateTime));
             await pulse.Emit(stream, sale);
         }

@@ -26,6 +26,9 @@ builder.Services.AddPulseSharpPostgreSql(connectionString, pulse =>
     pulse.MaxAttempts = 3;
     pulse.RetryDelay = TimeSpan.FromMilliseconds(500);
 
+    // Handled events older than 30 days are deleted (choose more than the longest a till can stay offline).
+    pulse.Advanced.KeepEvents = TimeSpan.FromDays(30);
+
     // Every handler class listens to the events it implements. Each one keeps its own place in the stream.
     pulse.AddHandler<ProductProjection>();
     pulse.AddHandler<SalesLedger>();
@@ -33,13 +36,16 @@ builder.Services.AddPulseSharpPostgreSql(connectionString, pulse =>
     pulse.AddHandler<ReceiptSender>();
     pulse.AddJobHandler<DailyReportJob, DailyReportHandler>();
 
-    // The tills may send their own sales, and may receive only the menu and stock warnings.
+    // A till may receive only the menu and stock warnings, and may write only its own sale streams ("Sale-till-1-...").
+    // It can never write into the menu, which belongs to the cloud.
     pulse.UseSyncServer(server =>
     {
         foreach (var till in builder.Configuration.GetSection("Tills").GetChildren())
         {
             server.AllowNode(till.Key, till.Value!, Streams.Menu, Streams.StockPrefix);
         }
+
+        server.PushStreams(node => [$"{Streams.SalePrefix}{node}-"]);
     });
 });
 
@@ -52,9 +58,13 @@ await ShopSchema.EnsureCreated(app.Services.GetRequiredService<NpgsqlDataSource>
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.MapPulseSharpSync();
-app.MapMenu();
-app.MapStatus();
-app.MapAdmin();
+app.MapGet("/health", () => Results.Ok());
+
+// Everything below answers only to requests from this machine, or with the X-Admin-Key header (see Admin:Key).
+var admin = app.MapGroup(string.Empty).AddEndpointFilter<AdminOnly>();
+admin.MapMenu();
+admin.MapStatus();
+admin.MapAdmin();
 
 app.Run();
 

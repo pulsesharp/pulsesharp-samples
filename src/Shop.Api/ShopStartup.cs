@@ -36,19 +36,13 @@ public sealed class ShopStartup(IPulse pulse, IPulseControl control, ILogger<Sho
         try
         {
             // NoStream means "only if the menu has no events yet", so two instances starting together seed it once.
-            await pulse.Emit(Streams.Menu, FirstProducts[0], new EmitOptions { ExpectedVersion = ExpectedVersion.NoStream }, cancellationToken);
+            // EmitAll saves all products together or none, so a crash can never leave a half-empty menu.
+            await pulse.EmitAll(Streams.Menu, FirstProducts, new EmitOptions { ExpectedVersion = ExpectedVersion.NoStream }, cancellationToken);
+            logger.LogInformation("The menu was empty. Added {Count} products.", FirstProducts.Length);
         }
         catch (ExpectedVersionMismatchException)
         {
-            return;
         }
-
-        foreach (var product in FirstProducts.Skip(1))
-        {
-            await pulse.Emit(Streams.Menu, product, cancellationToken);
-        }
-
-        logger.LogInformation("The menu was empty. Added {Count} products.", FirstProducts.Length);
     }
 
     private async Task PlanTonightsReport(CancellationToken cancellationToken)
