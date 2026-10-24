@@ -1,6 +1,6 @@
 <#
 Packs PulseSharp from a local checkout into .local-feed with a unique version, and makes the samples use it.
-Needed only until PulseSharp 0.6.0-alpha is on nuget.org. Delete .local-feed to go back to the published version.
+Needed only until PulseSharp 0.7.0-alpha is on nuget.org. Delete .local-feed to go back to the published version.
 
   ./scripts/pack-local.ps1 [-PulseSharpPath D:\Code\PulseSharp]
 #>
@@ -12,7 +12,7 @@ $ErrorActionPreference = 'Stop'
 $feed = Join-Path $PSScriptRoot '..\.local-feed'
 New-Item -ItemType Directory -Force $feed | Out-Null
 $feed = (Resolve-Path $feed).Path
-$version = '0.6.0-dev.' + (Get-Date -Format 'yyyyMMddHHmmss')
+$version = '0.7.0-dev.' + (Get-Date -Format 'yyyyMMddHHmmss')
 
 Push-Location $PulseSharpPath
 try {

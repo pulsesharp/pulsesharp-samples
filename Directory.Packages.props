@@ -5,7 +5,7 @@
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <PulseSharpVersion Condition="'$(PulseSharpVersion)' == ''">0.6.0-alpha</PulseSharpVersion>
+    <PulseSharpVersion Condition="'$(PulseSharpVersion)' == ''">0.7.0-alpha</PulseSharpVersion>
   </PropertyGroup>
 
   <ItemGroup Label="PulseSharp">

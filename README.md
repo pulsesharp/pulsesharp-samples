@@ -23,7 +23,7 @@ A small but complete system built on [PulseSharp](https://github.com/pulsesharp/
 
 You need the [.NET 10 SDK](https://dotnet.microsoft.com/download) and Docker.
 
-> **Until PulseSharp 0.6.0-alpha is on nuget.org**, build the packages from a local PulseSharp checkout first (see [Using an unreleased PulseSharp](#using-an-unreleased-pulsesharp)). After the release this step is not needed.
+> **Until PulseSharp 0.7.0-alpha is on nuget.org**, build the packages from a local PulseSharp checkout first (see [Using an unreleased PulseSharp](#using-an-unreleased-pulsesharp)). After the release this step is not needed.
 
 ```bash
 docker compose up -d --wait
