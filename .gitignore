@@ -8,8 +8,7 @@ TestResults/
 publish/
 artifacts/
 
-# Data the apps create while running
-data/
+# Databases the apps create while running
 *.db
 *.db-shm
 *.db-wal
