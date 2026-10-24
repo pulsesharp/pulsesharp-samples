@@ -21,9 +21,7 @@ A small but complete system built on [PulseSharp](https://github.com/pulsesharp/
 
 ## Run it in 5 minutes
 
-You need the [.NET 10 SDK](https://dotnet.microsoft.com/download) and Docker.
-
-> **Until PulseSharp 0.7.0-alpha is on nuget.org**, build the packages from a local PulseSharp checkout first (see [Using an unreleased PulseSharp](#using-an-unreleased-pulsesharp)). After the release this step is not needed.
+You need the [.NET 10 SDK](https://dotnet.microsoft.com/download) and Docker. PulseSharp comes from nuget.org.
 
 ```bash
 docker compose up -d --wait
@@ -135,16 +133,6 @@ These numbers come from one developer machine with PostgreSQL in Docker on the s
 - **Recovery after a crash.** If an app instance is killed, the restarted app or another instance takes over its handlers after 10 seconds and its running jobs after 30. A normal stop hands them over at once. A handler that hangs is stopped after `Advanced.HandlerTimeout` (5 minutes) and retried, so one stuck handler can never block its stream for good.
 - **Security.** A till can write only streams that start with `Sale-` and its own name; the server refuses anything else, so a till can never change the menu (`PushStreams`). The console and the admin endpoints answer only to requests from this machine; for other machines set `Admin:Key` and send it as the `X-Admin-Key` header. The till keys in `appsettings.json` are demo values: use real secrets, and HTTPS between the tills and the cloud, in your own app.
 - **Old events.** Events are kept forever. The coarse streams above keep the cursor table small; the events table grows by one row per event.
-
-## Using an unreleased PulseSharp
-
-The projects use the NuGet packages, not project references. To try a PulseSharp you have cloned next to this repo:
-
-```powershell
-./scripts/pack-local.ps1
-```
-
-It packs PulseSharp into `.local-feed` with a unique version (NuGet caches by version) and points the samples at it. Delete `.local-feed` to go back to the published version.
 
 ## License
 

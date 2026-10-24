@@ -8,9 +8,6 @@ TestResults/
 publish/
 artifacts/
 
-# Local PulseSharp packages made by scripts/pack-local.ps1
-.local-feed/
-
 # Data the apps create while running
 data/
 *.db

@@ -1,11 +1,8 @@
 <Project>
 
-  <!-- scripts/pack-local.ps1 writes this file while PulseSharp is not yet on nuget.org -->
-  <Import Project=".local-feed/version.props" Condition="Exists('.local-feed/version.props')" />
-
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <PulseSharpVersion Condition="'$(PulseSharpVersion)' == ''">0.7.0-alpha</PulseSharpVersion>
+    <PulseSharpVersion>0.7.0-alpha</PulseSharpVersion>
   </PropertyGroup>
 
   <ItemGroup Label="PulseSharp">
