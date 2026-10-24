@@ -68,7 +68,6 @@ Start over: delete the till folder (`%LocalAppData%/PulseSharpSamples` on Window
 | A job with progress, planned for later | [`Reports/DailyReportHandler.cs`](src/Shop.Api/Reports/DailyReportHandler.cs) (`EnqueueAt`) |
 | Putting the first data in place once, all or nothing, even with several instances | [`ShopStartup.cs`](src/Shop.Api/ShopStartup.cs) (`EmitAll`, `ExpectedVersion.NoStream`) |
 | The sync server, what a till may receive and what it may write | [`Shop.Api/Program.cs`](src/Shop.Api/Program.cs) (`UseSyncServer`, `PushStreams`, `MapPulseSharpSync`) |
-| Keeping the database small | [`Shop.Api/Program.cs`](src/Shop.Api/Program.cs), [`TillHost.cs`](src/Till.Desktop/TillHost.cs) (`Advanced.KeepEvents`) |
 | Keeping admin endpoints away from the network | [`Admin/AdminOnly.cs`](src/Shop.Api/Admin/AdminOnly.cs) |
 | Sync status, how many sales are waiting, and "Sync now" in a UI | [`MainViewModel.cs`](src/Till.Desktop/ViewModels/MainViewModel.cs) (`IPulseSync`, `Status.Waiting`, `StatusChanged`) |
 | Tests: fakes, handlers, the real engine, a real database | [`tests/Shop.Tests`](tests/Shop.Tests) |
@@ -133,9 +132,9 @@ These numbers come from one developer machine with PostgreSQL in Docker on the s
 
 - **Handlers are repeated sometimes.** Delivery is at least once, so every handler here is safe to run twice: inserts use `ON CONFLICT DO NOTHING`, and the stock keeper remembers which sales it already counted.
 - **Pick streams on purpose.** Events in one stream are handled in order, and PulseSharp keeps one cursor per handler and stream. A stream per sale would keep a cursor row per handler for every sale forever, so the tills use one stream per till and day (`Sale-till-1-2026-10-23`). The price: if a handler keeps failing on a sale, that till's later sales wait behind it until you retry or skip it. The numbers above show the difference.
-- **Recovery after a crash.** If an app instance is killed, the restarted app on the same machine takes over its handlers at once. Another machine takes over after the handler lease (10 seconds by default, `pulse.Advanced.HandlerLease`). A normal stop hands them over at once. A handler that hangs is stopped after `Advanced.HandlerTimeout` (5 minutes) and retried, so one stuck handler can never block its stream for good.
+- **Recovery after a crash.** If an app instance is killed, the restarted app or another instance takes over its handlers after 10 seconds and its running jobs after 30. A normal stop hands them over at once. A handler that hangs is stopped after `Advanced.HandlerTimeout` (5 minutes) and retried, so one stuck handler can never block its stream for good.
 - **Security.** A till can write only streams that start with `Sale-` and its own name; the server refuses anything else, so a till can never change the menu (`PushStreams`). The console and the admin endpoints answer only to requests from this machine; for other machines set `Admin:Key` and send it as the `X-Admin-Key` header. The till keys in `appsettings.json` are demo values: use real secrets, and HTTPS between the tills and the cloud, in your own app.
-- **Old events.** `KeepEvents` deletes events older than 30 days that every handler has handled (and that a till has sent), but always keeps the newest event of each stream. A stream per sale would therefore still leave one row per sale.
+- **Old events.** Events are kept forever. The coarse streams above keep the cursor table small; the events table grows by one row per event.
 
 ## Using an unreleased PulseSharp
 

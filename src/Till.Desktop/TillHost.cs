@@ -25,9 +25,6 @@ public static class TillHost
         {
             pulse.Node = options.Name;
 
-            // Handled events older than 30 days are deleted, but never before they reached the cloud.
-            pulse.Advanced.KeepEvents = TimeSpan.FromDays(30);
-
             // Sends this till's sales to the cloud and receives the menu and stock warnings. It works offline too.
             pulse.UseSync(sync =>
             {

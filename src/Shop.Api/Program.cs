@@ -26,9 +26,6 @@ builder.Services.AddPulseSharpPostgreSql(connectionString, pulse =>
     pulse.MaxAttempts = 3;
     pulse.RetryDelay = TimeSpan.FromMilliseconds(500);
 
-    // Handled events older than 30 days are deleted (choose more than the longest a till can stay offline).
-    pulse.Advanced.KeepEvents = TimeSpan.FromDays(30);
-
     // Every handler class listens to the events it implements. Each one keeps its own place in the stream.
     pulse.AddHandler<ProductProjection>();
     pulse.AddHandler<SalesLedger>();
